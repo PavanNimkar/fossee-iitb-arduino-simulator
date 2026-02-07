@@ -1,74 +1,103 @@
-# Arduino Simulator - Quick Start Guide
+# Arduino Simulator – FOSSEE OSHW Internship Screening Task (2025)
 
-## Prerequisites
+A web-based Arduino simulator built using **React (Vite)** that demonstrates **auto-wiring, pin configuration, automatic Arduino code generation, and logic-level simulation**, developed for the **FOSSEE OSHW Semester Long Internship – 2025 screening task**.
 
-Before you begin, ensure you have:
-- **Node.js** (version 14 or higher) - [Download here](https://nodejs.org/)
+---
+
+## Quick Start
+
+### Prerequisites
+- **Node.js** (version 16 or higher)
 - **npm** (comes with Node.js)
 - A modern web browser (Chrome, Firefox, Safari, or Edge)
 
-## Installation Steps
-
-### Step 1: Navigate to Project Directory
+### Installation
 ```bash
+# Navigate to project directory
 cd arduino-simulator
-```
 
-### Step 2: Install Dependencies
-```bash
+# Install dependencies
 npm install
+
+# Start development server
+npm run dev
 ```
 
-This will install:
-- React 18.2.0
-- React DOM 18.2.0
-- React Scripts 5.0.1
-- All other required dependencies
-
-### Step 3: Start Development Server
-```bash
-npm start
+### Open in browser
+```
+http://localhost:5173
 ```
 
-The application will automatically open in your browser at `http://localhost:3000`
+---
 
-If it doesn't open automatically, manually navigate to: **http://localhost:3000**
+## Features Implemented
 
-## Using the Application
+### Task 1: Web-Based Interface & Component Handling
+- Component palette on the **left** containing:
+  - Arduino Uno
+  - LED
+  - Push Button
+- Drag-and-drop placement of components
+- Central **canvas** for building the circuit
+- Toolbar to switch between **Circuit View** and **Code View**
+- **Start / Stop Simulation** controls embedded on the canvas
 
-### Complete Workflow (As Required by Task)
+### Task 2: Auto-Wiring & Pin Configuration
+- **Default pin mapping (mandatory initial state)**:
+  - LED → Digital Pin **10**
+  - Push Button → Digital Pin **2**
+- Automatic wiring on component placement
+- User-configurable digital pins (**2–13**)
+- Pin conflict prevention:
+  - One Arduino pin per component
+  - Used pins excluded from other components
+- Wiring updates automatically when pin assignments change
 
-#### 1. Add Components to Canvas
+### Task 3: Auto Code Generation & Logic-Level Simulation
+- Automatic Arduino code generation
+- Code updates instantly when pin numbers change
+- Generated code includes:
+  - `pinMode()`
+  - `digitalRead()`
+  - `digitalWrite()`
+- Logic-level simulation:
+  - Button pressed → GPIO **HIGH**
+  - Button released → GPIO **LOW**
+  - LED turns **ON** when button is pressed
+  - LED turns **OFF** when button is released
+- No manual code editing required
+
+---
+
+## How to Use (Mandatory End-to-End Flow)
+
+### 1. Add Components to Canvas
 
 **Step 1: Add Arduino Uno**
 - Look at the left sidebar (Component Palette)
-- Find "Arduino Uno" (🔲 icon)
-- Click and drag it to the white canvas area in the center
-- Release to drop it
+- Find Arduino Uno (🔲 icon)
+- Drag it to the central canvas
+- Release to place it
 
 **Step 2: Add LED**
-- Find "LED" (💡 icon) in the component palette
-- Drag it to the canvas
-- It will automatically wire to **Digital Pin 10** (default)
-- A dropdown will appear below the LED to change the pin
+- Drag LED (💡 icon) to the canvas
+- It automatically wires to Digital Pin 10 (default)
+- A dropdown appears below the LED to change the pin
 
 **Step 3: Add Push Button**
-- Find "Push Button" (🔘 icon) in the component palette
-- Drag it to the canvas
-- It will automatically wire to **Digital Pin 2** (default)
-- A dropdown will appear below the button to change the pin
+- Drag Push Button (🔘 icon) to the canvas
+- It automatically wires to Digital Pin 2 (default)
+- A dropdown appears below the button to change the pin
 
-#### 2. View Auto-Generated Code
+### 2. View Auto-Generated Code
 
-- Click the **"Code View"** button in the top toolbar
-- The right side will show the automatically generated Arduino code
-- The circuit remains visible on the left
+- Click **Code View** in the top toolbar
+- The right panel displays the generated Arduino code
+- The circuit remains visible on the canvas
 
-**Generated Code Structure:**
+**Example Generated Code:**
 ```cpp
 // Auto-generated Arduino code
-// LED Pin: 10
-// Button Pin: 2
 
 const int LED_PIN = 10;
 const int BUTTON_PIN = 2;
@@ -80,224 +109,177 @@ void setup() {
 
 void loop() {
   int buttonState = digitalRead(BUTTON_PIN);
-  
+
   if (buttonState == HIGH) {
-    digitalWrite(LED_PIN, HIGH);  // Turn LED on
+    digitalWrite(LED_PIN, HIGH);   // Turn LED ON
   } else {
-    digitalWrite(LED_PIN, LOW);   // Turn LED off
+    digitalWrite(LED_PIN, LOW);    // Turn LED OFF
   }
 }
 ```
 
-#### 3. Change Pin Assignments
+### 3. Change Pin Assignments
 
-**To Change LED Pin:**
-- Find the dropdown under the LED component
-- Currently shows: "D10"
-- Click to see available pins (D2-D13)
-- Select a different pin (e.g., D11)
-- **Code updates automatically!**
+**Change LED Pin:**
+- Use the dropdown below the LED
+- Default: D10
+- Select any available pin between D2–D13
+- Arduino code updates automatically
 
-**To Change Button Pin:**
-- Find the dropdown under the Push Button component
-- Currently shows: "D2"
-- Click to see available pins
-- Note: Pins already used by LED are excluded
-- Select a different pin (e.g., D3)
-- **Code updates automatically!**
+**Change Button Pin:**
+- Use the dropdown below the Push Button
+- Default: D2
+- Pins already used by the LED are excluded
+- Arduino code updates automatically
 
 **Pin Conflict Prevention:**
-- If LED is on D10, D10 won't appear in Button's dropdown
-- If Button is on D2, D2 won't appear in LED's dropdown
-- Only pins 2-13 are available (Arduino digital pins)
+- One pin per component
+- LED and Button cannot share the same pin
+- Only Arduino digital pins 2–13 are allowed
 
-#### 4. Run Simulation
+### 4. Run Simulation
 
 **Start Simulation:**
-- Click the green **"▶ Start Simulation"** button
-- A green status bar appears: "🟢 Simulation Running"
-- Instructions appear: "Click and hold the push button to turn the LED ON/OFF"
+- Click the green ▶ **Start Simulation** button (inside the canvas)
+- Simulation status changes to Running
 
 **Test the Circuit:**
-- **Click and HOLD** the red push button component
-- LED turns **RED** (ON state)
-- **Release** the push button
-- LED turns **DARK GRAY** (#333) (OFF state)
+- Click and HOLD the push button
+  - Button GPIO → HIGH
+  - LED turns ON (red)
+- Release the push button
+  - Button GPIO → LOW
+  - LED turns OFF (dark gray)
 
 **Stop Simulation:**
-- Click the red **"⏹ Stop Simulation"** button
-- Simulation stops
-- LED returns to OFF state
+- Click ⏹ **Stop Simulation**
+- Simulation stops and LED resets to OFF
 
-## Features Demonstrated
+---
 
-### ✅ Task 1 Requirements
+## Technical Implementation
 
-1. **Component Palette** ✓
-   - Left sidebar with draggable components
-   - Arduino Uno, LED, Push Button
+### Technologies Used
+* **React 18**
+* **Vite** (development & build tool)
+* **HTML5 Drag & Drop API**
+* **CSS-in-JS styling**
+* **Logic-level GPIO simulation**
 
-2. **Central Canvas** ✓
-   - Drop zone for components
-   - Visual component placement
-   - Circuit building area
-
-3. **View Toggle** ✓
-   - Switch between Circuit View and Code View
-   - Circuit remains visible in Code View
-
-4. **Simulation Controls** ✓
-   - Start button
-   - Stop button
-   - Status indicators
-
-### ✅ Auto-Wiring Features
-
-- **Default Assignments:**
-  - LED → D10
-  - Button → D2
-
-- **Pin Configuration:**
-  - Dropdown selectors for each component
-  - Pins 2-13 available
-  - No duplicate assignments
-  - Dynamic filtering
-
-### ✅ Code Generation
-
-- **Automatic Generation:**
-  - Generated on component placement
-  - Uses pinMode(), digitalRead(), digitalWrite()
-  
-- **Auto Updates:**
-  - Changes when pins are modified
-  - No manual editing needed
-
-### ✅ Simulation
-
-- **Logic-Level:**
-  - Button press = GPIO HIGH
-  - LED ON when button pressed
-  - LED OFF when button released
-
-## Troubleshooting
-
-### Port Already in Use
-If port 3000 is already in use:
-```bash
-# Stop the current process or use a different port
-PORT=3001 npm start
-```
-
-### Dependencies Not Installing
-```bash
-# Clear npm cache and retry
-npm cache clean --force
-npm install
-```
-
-### Wokwi Elements Not Loading
-- Check your internet connection (Wokwi elements load from CDN)
-- Refresh the browser page
-- Clear browser cache
-
-### Components Not Dragging
-- Ensure you're using a modern browser
-- Try refreshing the page
-- Check browser console for errors (F12)
-
-### Simulation Not Working
-- Ensure all three components are placed (Arduino, LED, Button)
-- Check that pins are properly assigned
-- Click Start Simulation button
-
-## Demo Video Recording Tips
-
-### What to Show:
-
-1. **Initial State**
-   - Empty canvas
-   - Component palette visible
-
-2. **Adding Components**
-   - Drag Arduino → canvas
-   - Drag LED → canvas (show it auto-wires to D10)
-   - Drag Button → canvas (show it auto-wires to D2)
-
-3. **Code View**
-   - Click Code View button
-   - Show generated code
-   - Point out LED Pin: 10, Button Pin: 2
-
-4. **Pin Changes**
-   - Change LED pin to D11
-   - Show code updates (LED_PIN = 11)
-   - Change Button pin to D3
-   - Show code updates (BUTTON_PIN = 3)
-
-5. **Simulation**
-   - Click Start Simulation
-   - Show status indicator
-   - Press and hold button → LED turns red
-   - Release button → LED turns gray
-   - Click Stop Simulation
-
-### Recording Tools:
-- **Windows:** Xbox Game Bar (Win + G), OBS Studio
-- **Mac:** QuickTime, built-in screen recording (Cmd + Shift + 5)
-- **Linux:** SimpleScreenRecorder, OBS Studio
-- **Online:** Loom, Screencast-O-Matic
-
-## Project Structure
-
+### Project Structure
 ```
 arduino-simulator/
-├── public/
-│   └── index.html          # Loads Wokwi elements from CDN
+├── index.html
 ├── src/
 │   ├── components/
-│   │   ├── Canvas.jsx              # Circuit building area
-│   │   ├── CodeView.jsx            # Code display
-│   │   ├── ComponentPalette.jsx    # Draggable components
-│   │   ├── SimulationControls.jsx  # Start/Stop buttons
-│   │   └── Toolbar.jsx             # View switcher
+│   │   ├── Canvas.jsx
+│   │   ├── CodeView.jsx
+│   │   ├── ComponentPalette.jsx
+│   │   ├── SimulationControls.jsx
+│   │   └── Toolbar.jsx
 │   ├── constants/
-│   │   └── pins.js                 # Pin configurations
+│   │   └── pins.js
 │   ├── utils/
-│   │   └── codeGenerator.js        # Code generation logic
-│   ├── App.js              # Main application
-│   ├── App.css             # Styles
-│   └── index.js            # Entry point
+│   │   └── codeGenerator.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── App.css
 ├── package.json
 └── README.md
 ```
 
-## Next Steps
+---
 
-After completing Task 1, you can:
-1. Record your demo video
-2. Test all functionality thoroughly
-3. Submit through the official form
-4. Prepare for Tasks 2 and 3 (if applicable)
+## Scope & Constraints Met
 
-## Support
+* ✔ Controller: **Arduino Uno only**
+* ✔ Components: **LED, Push Button**
+* ✔ Default Pins: LED → D10, Button → D2
+* ✔ Pin Range: Digital Pins **2–13**
+* ✔ Pin Exclusivity enforced
+* ✔ Automatic code generation
+* ✔ Automatic updates on pin change
+* ✔ Button controls LED (logic-level simulation)
 
-For issues or questions:
-- Check the browser console (F12) for errors
-- Review the README.md for detailed documentation
-- Ensure all files are in the correct locations
-- Verify Node.js and npm are properly installed
+---
 
-## Success Criteria
+## Demo Video Checklist
 
-Your implementation is successful if you can:
-- ✅ Drag all three components to canvas
-- ✅ See default pin assignments (LED:D10, Button:D2)
-- ✅ View auto-generated Arduino code
-- ✅ Change pin assignments via dropdowns
-- ✅ See code update automatically
-- ✅ Start simulation successfully
-- ✅ Control LED with button press/release
-- ✅ Stop simulation
+* [x] Empty canvas
+* [x] Drag Arduino Uno to canvas
+* [x] Drag LED (auto-wired to D10)
+* [x] Drag Push Button (auto-wired to D2)
+* [x] Open Code View (code visible with circuit)
+* [x] Change LED pin → code updates automatically
+* [x] Change Button pin → code updates automatically
+* [x] Start simulation
+* [x] Button press → LED ON
+* [x] Button release → LED OFF
+* [x] Stop simulation
 
-Good luck with your FOSSEE OSHW internship application! 🚀
+---
+
+## Troubleshooting
+
+### Development Server Not Starting
+```bash
+npm install
+npm run dev
+```
+
+### Port Already in Use
+Vite automatically selects a free port. Check the terminal output for the correct URL.
+
+### Drag-and-Drop Not Working
+- Use a modern browser
+- Refresh the page
+- Check console errors (F12)
+
+### Simulation Not Working
+- Ensure Arduino, LED, and Button are all placed
+- Click Start Simulation
+- Press and hold the button (not a single click)
+
+---
+
+## Browser Compatibility
+
+Tested on:
+* Chrome 90+
+* Firefox 88+
+* Edge 90+
+* Safari 14+
+
+---
+
+## Success Criteria (FOSSEE)
+
+Your implementation is successful if:
+* ✅ All components can be dragged to canvas
+* ✅ Default pins are correct (LED:D10, Button:D2)
+* ✅ Arduino code is auto-generated
+* ✅ Code updates when pins change
+* ✅ Simulation starts and stops
+* ✅ Button press controls LED correctly
+
+---
+
+## Future Enhancements (Out of Scope)
+
+* Additional components (resistors, sensors)
+* Multiple Arduino boards
+* Analog pin support
+* Serial monitor
+* AVR8js-based execution
+
+---
+
+## Author
+
+Developed for the **FOSSEE OSHW Semester Long Internship – 2025 Screening Task**
+
+---
+
+## License
+
+This project is created for **educational and evaluation purposes only** as part of the FOSSEE OSHW internship screening process.
