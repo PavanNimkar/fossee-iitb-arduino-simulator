@@ -1,516 +1,450 @@
-import React, { useEffect, useRef, useState } from "react";
-import { COMPONENT_TYPES, AVAILABLE_PINS } from "../constants/pins";
+import React, { Fragment, useEffect, useRef } from "react";
+import "@wokwi/elements";
+import {
+  runCode,
+  stopCode,
+  handleButtonPress,
+  handleButtonRelease,
+} from "../constants/runCode";
 
 const Canvas = ({
-  components,
-  onDrop,
-  pinAssignments,
-  onPinChange,
-  isSimulating,
-  buttonPressed,
+  canvasComponent,
+  toggleState,
+  setAllPresent,
+  unoCode,
   ledState,
+  setLedState,
+  buttonPressed,
   setButtonPressed,
-  children,
+  isSimulationRunning,
+  setIsSimulationRunning,
+  setButtonPin,
+  setLedPin,
+  buttonPin,
+  ledPin,
 }) => {
-  const canvasRef = useRef(null);
-  const arduinoRef = useRef(null);
-  const ledRef = useRef(null);
+  const Components = [...new Set(canvasComponent)];
   const buttonRef = useRef(null);
 
-  // Track positions for wire drawing
-  const [wirePositions, setWirePositions] = useState({
-    led: null,
-    button: null,
-  });
+  const hasUno = Components.includes("wokwi-arduino-uno");
+  const hasLed = Components.includes("wokwi-led");
+  const hasButton = Components.includes("wokwi-pushbutton");
 
-  // Update wire positions when components are placed or pins change
-  useEffect(() => {
-    const updateWirePositions = () => {
-      const arduino = arduinoRef.current;
-      const led = ledRef.current;
-      const button = buttonRef.current;
+  const showLedWiring = hasUno && hasLed;
+  const showButtonWiring = hasUno && hasButton;
 
-      if (arduino && led) {
-        const arduinoRect = arduino.getBoundingClientRect();
-        const ledRect = led.getBoundingClientRect();
-        const canvasRect = canvasRef.current.getBoundingClientRect();
+  const allPresent = showButtonWiring && showLedWiring;
 
-        setWirePositions((prev) => ({
-          ...prev,
-          led: {
-            start: {
-              x: arduinoRect.right - canvasRect.left,
-              y: arduinoRect.top + arduinoRect.height / 2 - canvasRect.top,
-            },
-            end: {
-              x: ledRect.left - canvasRect.left,
-              y: ledRect.top + ledRect.height / 2 - canvasRect.top,
-            },
-            color: ledState ? "#e74c3c" : "#3498db", // Red when active, blue when inactive
-            pin: pinAssignments.LED,
-          },
-        }));
-      }
+  // All available Arduino pins
+  const allPins = [
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+  ];
 
-      if (arduino && button) {
-        const arduinoRect = arduino.getBoundingClientRect();
-        const buttonRect = button.getBoundingClientRect();
-        const canvasRect = canvasRef.current.getBoundingClientRect();
-
-        setWirePositions((prev) => ({
-          ...prev,
-          button: {
-            start: {
-              x: arduinoRect.right - canvasRect.left,
-              y: arduinoRect.bottom - arduinoRect.height / 3 - canvasRect.top,
-            },
-            end: {
-              x: buttonRect.left - canvasRect.left,
-              y: buttonRect.top + buttonRect.height / 2 - canvasRect.top,
-            },
-            color: buttonPressed ? "#27ae60" : "#9b59b6", // Green when pressed, purple when not
-            pin: pinAssignments.PUSH_BUTTON,
-          },
-        }));
-      }
+  // LED wire configurations based on pin number
+  const getLedWireConfig = (pin) => {
+    const configs = {
+      2: { rotation: "-rotate-51", height: "h-36" },
+      3: { rotation: "-rotate-48", height: "h-34" },
+      4: { rotation: "-rotate-45", height: "h-32" },
+      5: { rotation: "-rotate-42", height: "h-31" },
+      6: { rotation: "-rotate-39", height: "h-29" },
+      7: { rotation: "-rotate-34", height: "h-27" },
+      8: { rotation: "-rotate-28", height: "h-26" },
+      9: { rotation: "-rotate-22", height: "h-25" },
+      10: { rotation: "-rotate-17", height: "h-24" },
+      11: { rotation: "-rotate-11", height: "h-23" },
+      12: { rotation: "-rotate-5", height: "h-23" },
+      13: { rotation: "rotate-1", height: "h-23" },
     };
-
-    // Update wire positions after component render
-    const timer = setTimeout(updateWirePositions, 100);
-    return () => clearTimeout(timer);
-  }, [components, pinAssignments, ledState, buttonPressed]);
-
-  // Update LED state when simulation changes
-  useEffect(() => {
-    if (ledRef.current && isSimulating) {
-      ledRef.current.color = ledState ? "red" : "#333";
-    }
-  }, [ledState, isSimulating]);
-
-  // Handle button interactions
-  useEffect(() => {
-    if (buttonRef.current && isSimulating) {
-      buttonRef.current.pressed = buttonPressed;
-    }
-  }, [buttonPressed, isSimulating]);
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const componentType = e.dataTransfer.getData("componentType");
-    if (componentType) {
-      onDrop(componentType);
-    }
+    return configs[pin] || configs["10"];
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  // Button wire configurations based on pin number
+  const getButtonWireConfig = (pin) => {
+    const configs = {
+      2: { rotation: "rotate-2", height: "h-26" },
+      3: { rotation: "rotate-6", height: "h-26" },
+      4: { rotation: "rotate-12", height: "h-26" },
+      5: { rotation: "rotate-17", height: "h-27" },
+      6: { rotation: "rotate-22", height: "h-28" },
+      7: { rotation: "rotate-27", height: "h-29" },
+      8: { rotation: "rotate-33", height: "h-31" },
+      9: { rotation: "rotate-37", height: "h-32" },
+      10: { rotation: "rotate-40", height: "h-33" },
+      11: { rotation: "rotate-43", height: "h-35" },
+      12: { rotation: "rotate-46", height: "h-37" },
+      13: { rotation: "rotate-48", height: "h-38" },
+    };
+    return configs[pin] || configs["2"];
   };
 
-  const getAvailablePins = (componentType) => {
-    return AVAILABLE_PINS.filter((pin) => {
-      // Exclude pins already in use by other components
-      for (const [type, assignedPin] of Object.entries(pinAssignments)) {
-        if (type !== componentType && assignedPin === pin) {
-          return false;
-        }
-      }
-      return true;
+  const ledWireConfig = getLedWireConfig(ledPin);
+  const buttonWireConfig = getButtonWireConfig(buttonPin);
+
+  // Get available pins for LED (exclude button pin)
+  const getAvailableLedPins = () => {
+    return allPins.filter((pin) => pin !== buttonPin);
+  };
+
+  // Get available pins for Button (exclude LED pin)
+  const getAvailableButtonPins = () => {
+    return allPins.filter((pin) => pin !== ledPin);
+  };
+
+  // Update allPresent immediately when components change
+  useEffect(() => {
+    setAllPresent(allPresent);
+    console.log("Components present:", {
+      hasUno,
+      hasLed,
+      hasButton,
+      allPresent,
     });
+  }, [allPresent, setAllPresent, hasUno, hasLed, hasButton]);
+
+  // Restart simulation when pins change
+  useEffect(() => {
+    if (isSimulationRunning && unoCode) {
+      console.log("Pins changed, restarting simulation...");
+      stopCode();
+      setLedState(false);
+      setButtonPressed(false);
+
+      // Restart after a brief delay
+      setTimeout(async () => {
+        const success = await runCode(unoCode, setLedState, buttonPin, ledPin);
+        if (!success) {
+          setIsSimulationRunning(false);
+        }
+      }, 100);
+    }
+  }, [buttonPin, ledPin]);
+
+  // Set up button event listeners
+  useEffect(() => {
+    if (buttonRef.current) {
+      const buttonElement = buttonRef.current;
+
+      const handlePress = (e) => {
+        console.log("Button press event received");
+        if (isSimulationRunning) {
+          setButtonPressed(true);
+          handleButtonPress(parseInt(buttonPin));
+        } else {
+          console.log("Simulation not running");
+        }
+      };
+
+      const handleRelease = (e) => {
+        console.log("Button release event received");
+        if (isSimulationRunning) {
+          setButtonPressed(false);
+          handleButtonRelease(parseInt(buttonPin));
+        } else {
+          console.log("Simulation not running");
+        }
+      };
+
+      // Add event listeners for button press/release
+      buttonElement.addEventListener("button-press", handlePress);
+      buttonElement.addEventListener("button-release", handleRelease);
+
+      console.log("Button event listeners added");
+
+      return () => {
+        buttonElement.removeEventListener("button-press", handlePress);
+        buttonElement.removeEventListener("button-release", handleRelease);
+      };
+    }
+  }, [isSimulationRunning, setButtonPressed, buttonPin]);
+
+  const handleStart = async () => {
+    console.log("Start button clicked", {
+      unoCode,
+      allPresent,
+      isSimulationRunning,
+      buttonPin,
+      ledPin,
+    });
+
+    if (!allPresent) {
+      alert(
+        "Please add all components (Arduino Uno, LED, and Push Button) first!",
+      );
+      return;
+    }
+
+    if (!unoCode) {
+      alert("No code available. Please wait for code generation.");
+      return;
+    }
+
+    if (buttonPin === ledPin) {
+      alert("Error: LED and Button cannot use the same pin!");
+      return;
+    }
+
+    if (isSimulationRunning) {
+      console.log("Simulation already running");
+      return;
+    }
+
+    console.log("Starting simulation with code:", unoCode);
+    setIsSimulationRunning(true);
+    const success = await runCode(unoCode, setLedState, buttonPin, ledPin);
+    if (!success) {
+      setIsSimulationRunning(false);
+    }
   };
 
-  const hasArduino = components.includes(COMPONENT_TYPES.ARDUINO);
-  const hasLED = components.includes(COMPONENT_TYPES.LED);
-  const hasButton = components.includes(COMPONENT_TYPES.PUSH_BUTTON);
-
-  // Draw curved wire between two points
-  const drawWire = (start, end, color, label) => {
-    if (!start || !end) return null;
-
-    // Calculate control points for curved line
-    const midX = (start.x + end.x) / 2;
-    const curve = 50; // Curve amount
-
-    const path = `M ${start.x} ${start.y} Q ${midX} ${start.y + curve}, ${end.x} ${end.y}`;
-
-    return (
-      <g key={label}>
-        {/* Wire shadow for depth */}
-        <path
-          d={path}
-          fill="none"
-          stroke="rgba(0,0,0,0.2)"
-          strokeWidth="4"
-          strokeLinecap="round"
-          transform="translate(2, 2)"
-        />
-        {/* Main wire */}
-        <path
-          d={path}
-          fill="none"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-          className="wire-animated"
-        />
-        {/* Wire label showing pin number */}
-        <text
-          x={midX}
-          y={start.y + curve - 10}
-          fill={color}
-          fontSize="12"
-          fontWeight="bold"
-          textAnchor="middle"
-          style={{
-            backgroundColor: "white",
-            padding: "2px 4px",
-            borderRadius: "3px",
-          }}
-        >
-          {label}
-        </text>
-        {/* Dots at connection points */}
-        <circle cx={start.x} cy={start.y} r="4" fill={color} />
-        <circle cx={end.x} cy={end.y} r="4" fill={color} />
-      </g>
-    );
+  const handleStop = () => {
+    if (isSimulationRunning) {
+      console.log("Stopping simulation");
+      setIsSimulationRunning(false);
+      stopCode();
+      setLedState(false);
+      setButtonPressed(false);
+    }
   };
+
+  const handleLedPinChange = (e) => {
+    if (isSimulationRunning) {
+      alert("Please stop the simulation before changing pins!");
+      return;
+    }
+
+    const newPin = e.target.value;
+
+    // Check if the new pin is already used by button
+    if (newPin === buttonPin) {
+      alert(
+        `Pin ${newPin} is already used by the Button. Please select a different pin.`,
+      );
+      return;
+    }
+
+    setLedPin(newPin);
+    console.log(`LED pin changed to ${newPin}`);
+  };
+
+  const handleButtonPinChange = (e) => {
+    if (isSimulationRunning) {
+      alert("Please stop the simulation before changing pins!");
+      return;
+    }
+
+    const newPin = e.target.value;
+
+    // Check if the new pin is already used by LED
+    if (newPin === ledPin) {
+      alert(
+        `Pin ${newPin} is already used by the LED. Please select a different pin.`,
+      );
+      return;
+    }
+
+    setButtonPin(newPin);
+    console.log(`Button pin changed to ${newPin}`);
+  };
+
+  const availableLedPins = getAvailableLedPins();
+  const availableButtonPins = getAvailableButtonPins();
 
   return (
-    <div
-      ref={canvasRef}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      style={styles.canvas}
-    >
-      {/* SVG overlay for wires */}
-      <svg style={styles.wireOverlay}>
-        {wirePositions.led &&
-          drawWire(
-            wirePositions.led.start,
-            wirePositions.led.end,
-            wirePositions.led.color,
-            `D${wirePositions.led.pin}`,
-          )}
-        {wirePositions.button &&
-          drawWire(
-            wirePositions.button.start,
-            wirePositions.button.end,
-            wirePositions.button.color,
-            `D${wirePositions.button.pin}`,
-          )}
-      </svg>
+    <div className="relative h-full bg-gray-50">
+      {showLedWiring && (
+        <Fragment>
+          {/* LED Ground wire (black) - stays constant */}
+          <div
+            className={`bg-black origin-top absolute z-10 w-1 h-23 top-30 ml-4 ${toggleState ? "left-66" : "left-118"}`}
+          ></div>
 
-      <div style={styles.circuitArea}>
-        {!hasArduino && (
-          <div style={styles.placeholder}>Drag Arduino Uno here to start</div>
-        )}
+          {/* LED Signal wire (red) - changes based on pin */}
+          <div
+            className={`bg-red-500 absolute origin-top ${ledWireConfig.rotation} ${ledWireConfig.height} z-10 w-1 top-30 ml-4 ${toggleState ? "left-69" : "left-121"}`}
+          ></div>
 
-        {hasArduino && (
-          <div style={styles.componentContainer}>
-            {/* Arduino Uno */}
-            <div style={styles.component}>
-              <wokwi-arduino-uno ref={arduinoRef}></wokwi-arduino-uno>
-              <div style={styles.label}>Arduino Uno</div>
-              <div style={styles.pinInfo}>
-                <div style={styles.pinBadge}>Pin {pinAssignments.LED}: LED</div>
-                <div style={styles.pinBadge}>
-                  Pin {pinAssignments.PUSH_BUTTON}: Button
-                </div>
-              </div>
-            </div>
-
-            {/* LED with pin selector */}
-            {hasLED && (
-              <div style={styles.component}>
-                <div style={styles.componentWrapper}>
-                  <wokwi-led
-                    ref={ledRef}
-                    color={isSimulating && ledState ? "red" : "#333"}
-                  ></wokwi-led>
-                  <div style={styles.pinSelector}>
-                    <label style={styles.pinLabel}>LED Pin:</label>
-                    <select
-                      value={pinAssignments.LED}
-                      onChange={(e) =>
-                        onPinChange("LED", parseInt(e.target.value))
-                      }
-                      style={styles.select}
-                      disabled={isSimulating}
-                    >
-                      {getAvailablePins("LED").map((pin) => (
-                        <option key={pin} value={pin}>
-                          D{pin}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div style={styles.label}>
-                  LED → Digital Pin {pinAssignments.LED}
-                </div>
-                <div style={styles.wireStatus}>
-                  {isSimulating && ledState
-                    ? "🔴 Active (HIGH)"
-                    : "⚫ Inactive (LOW)"}
-                </div>
-              </div>
-            )}
-
-            {/* Push Button with pin selector */}
-            {hasButton && (
-              <div style={styles.component}>
-                <div style={styles.componentWrapper}>
-                  <div
-                    onMouseDown={() => isSimulating && setButtonPressed(true)}
-                    onMouseUp={() => isSimulating && setButtonPressed(false)}
-                    onMouseLeave={() => isSimulating && setButtonPressed(false)}
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "50%",
-                      backgroundColor: buttonPressed ? "#27ae60" : "#bdc3c7",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: isSimulating ? "pointer" : "not-allowed",
-                      border: "3px solid #2c3e50",
-                    }}
-                  >
-                    🔘
-                  </div>
-
-                  <div style={styles.pinSelector}>
-                    <label style={styles.pinLabel}>Button Pin:</label>
-                    <select
-                      value={pinAssignments.PUSH_BUTTON}
-                      onChange={(e) =>
-                        onPinChange("PUSH_BUTTON", Number(e.target.value))
-                      }
-                      disabled={isSimulating}
-                      style={styles.select}
-                    >
-                      {getAvailablePins("PUSH_BUTTON").map((pin) => (
-                        <option key={pin} value={pin}>
-                          D{pin}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div style={styles.label}>
-                  Push Button → Digital Pin {pinAssignments.PUSH_BUTTON}
-                </div>
-
-                <div style={styles.wireStatus}>
-                  {buttonPressed ? "🟢 HIGH" : "⚪ LOW"}
-                </div>
-              </div>
-            )}
-
-            {/* Connection info panel */}
-            {hasLED && hasButton && (
-              <div style={styles.connections}>
-                <div style={styles.connectionInfo}>
-                  <strong>🔌 Active Wiring Configuration:</strong>
-                  <div style={styles.wiringList}>
-                    <div style={styles.wiringItem}>
-                      <span
-                        style={{
-                          ...styles.wireDot,
-                          backgroundColor: "#3498db",
-                        }}
-                      ></span>
-                      LED connected to Digital Pin {pinAssignments.LED} (Output)
-                    </div>
-                    <div style={styles.wiringItem}>
-                      <span
-                        style={{
-                          ...styles.wireDot,
-                          backgroundColor: "#9b59b6",
-                        }}
-                      ></span>
-                      Button connected to Digital Pin{" "}
-                      {pinAssignments.PUSH_BUTTON} (Input)
-                    </div>
-                  </div>
-                  <div style={styles.wireNote}>
-                    💡 Visual wires update automatically when pins change
-                  </div>
-                </div>
-              </div>
-            )}
+          {/* LED Pin selector */}
+          <div
+            className={`absolute top-8 text-sm w-24 h-auto ${toggleState ? "left-64" : "left-105"}`}
+          >
+            <label className="block text-xs font-semibold mb-1">LED Pin</label>
+            <select
+              name="ledPin"
+              id="ledPin"
+              value={ledPin}
+              onChange={handleLedPinChange}
+              disabled={isSimulationRunning}
+              className={`w-[60%] px-2 py-1 border rounded text-xs ${
+                isSimulationRunning
+                  ? "bg-gray-200 cursor-not-allowed"
+                  : "bg-white cursor-pointer"
+              }`}
+            >
+              {allPins.map((pin) => (
+                <option
+                  key={pin}
+                  value={pin}
+                  disabled={pin === buttonPin}
+                  className={pin === buttonPin ? "text-gray-400" : ""}
+                >
+                  {pin} {pin === buttonPin ? "(Used by Button)" : ""}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+        </Fragment>
+      )}
+
+      {showButtonWiring && (
+        <Fragment>
+          {/* Button Ground wire (black) - stays constant */}
+          <div
+            className={`bg-black absolute origin-top rotate-[4.5deg] z-10 top-27 w-1 h-72 ml-4 ${toggleState ? "right-63" : "right-114"}`}
+          ></div>
+
+          {/* Button Signal wire (red) - changes based on pin */}
+          <div
+            className={`bg-red-500 absolute origin-top ${buttonWireConfig.rotation} ${buttonWireConfig.height} z-10 top-27 w-1 ml-4 ${toggleState ? "right-51" : "right-102"}`}
+          ></div>
+
+          {/* Button Pin selector */}
+          <div
+            className={`absolute top-8 w-24 text-sm h-auto ${toggleState ? "right-46" : "right-85"}`}
+          >
+            <label className="block text-xs font-semibold mb-1">
+              Button Pin
+            </label>
+            <select
+              name="buttonPin"
+              id="buttonPin"
+              value={buttonPin}
+              onChange={handleButtonPinChange}
+              disabled={isSimulationRunning}
+              className={`w-[60%] px-2 py-1 border rounded text-xs ${
+                isSimulationRunning
+                  ? "bg-gray-200 cursor-not-allowed"
+                  : "bg-white cursor-pointer"
+              }`}
+            >
+              {allPins.map((pin) => (
+                <option
+                  key={pin}
+                  value={pin}
+                  disabled={pin === ledPin}
+                  className={pin === ledPin ? "text-gray-400" : ""}
+                >
+                  {pin} {pin === ledPin ? "(Used by LED)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Fragment>
+      )}
+
+      {Components.map((ComponentElement, index) => {
+        const Component = ComponentElement;
+        return (
+          <Fragment key={index}>
+            {(() => {
+              const positions = {
+                "wokwi-arduino-uno":
+                  "absolute w-full top-50 flex justify-center items-center",
+                "wokwi-led": `absolute top-20 ${toggleState ? "left-67" : "left-119"}`,
+                "wokwi-pushbutton": `absolute top-20 scale-75 ${toggleState ? "right-49" : "right-100"}`,
+              };
+
+              return (
+                <div className={positions[Component]}>
+                  {Component === "wokwi-led" ? (
+                    <Component value={ledState} color="red" />
+                  ) : Component === "wokwi-pushbutton" ? (
+                    <Component
+                      ref={buttonRef}
+                      pressed={buttonPressed}
+                      color="red"
+                    />
+                  ) : (
+                    <Component />
+                  )}
+                </div>
+              );
+            })()}
+          </Fragment>
+        );
+      })}
+
+      <div className="absolute top-120 flex gap-5 bg-white rounded-2xl w-full justify-center text-white px-4 py-2">
+        <button
+          className={`py-2 px-6 rounded-xl font-semibold transition-all ${
+            isSimulationRunning ||
+            !allPresent ||
+            !unoCode ||
+            buttonPin === ledPin
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600 cursor-pointer"
+          }`}
+          onClick={handleStart}
+          disabled={
+            isSimulationRunning ||
+            !allPresent ||
+            !unoCode ||
+            buttonPin === ledPin
+          }
+        >
+          Start
+        </button>
+        <button
+          className={`py-2 px-6 rounded-xl font-semibold transition-all ${
+            !isSimulationRunning
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-500 hover:bg-red-600 cursor-pointer"
+          }`}
+          onClick={handleStop}
+          disabled={!isSimulationRunning}
+        >
+          Stop
+        </button>
       </div>
-      <div style={styles.canvasControls}>{children}</div>
+
+      {!allPresent && (
+        <div className="absolute top-140 w-full text-center text-gray-600 text-sm">
+          Add Arduino Uno, LED, and Push Button to start
+        </div>
+      )}
+
+      {allPresent && !unoCode && (
+        <div className="absolute top-140 w-full text-center text-yellow-600 text-sm">
+          Click on "View Code" to generate code and then run the simulation by
+          pressing "Start" button.
+        </div>
+      )}
+
+      {allPresent && unoCode && buttonPin === ledPin && (
+        <div className="absolute top-140 w-full text-center text-red-600 text-sm font-semibold">
+          ⚠️ Error: LED and Button cannot use the same pin!
+        </div>
+      )}
+
+      {isSimulationRunning && (
+        <div className="absolute top-5 left-5 bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2">
+          <span className="animate-pulse">●</span> Running (LED: Pin {ledPin},
+          Button: Pin {buttonPin})
+        </div>
+      )}
     </div>
   );
-};
-
-const styles = {
-  canvas: {
-    flex: 1,
-    backgroundColor: "#fdfefe",
-    border: "2px solid #d5d8dc",
-    borderRadius: "6px",
-    position: "relative",
-    minHeight: "600px",
-    boxShadow: "inset 0 0 8px rgba(0,0,0,0.08)",
-  },
-  canvasControls: {
-    position: "absolute",
-    bottom: "20px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    backgroundColor: "#ecf0f1",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    border: "2px solid #bdc3c7",
-    zIndex: 10,
-  },
-  wireOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "100%",
-    pointerEvents: "none",
-    zIndex: 1,
-  },
-  circuitArea: {
-    width: "100%",
-    height: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-    zIndex: 2,
-  },
-  placeholder: {
-    fontSize: "24px",
-    color: "#95a5a6",
-    textAlign: "center",
-    padding: "40px",
-  },
-  componentContainer: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "60px",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    width: "100%",
-    maxWidth: "1000px",
-  },
-  component: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "15px",
-    padding: "20px",
-    backgroundColor: "#ecf0f1",
-    borderRadius: "12px",
-    border: "2px solid #bdc3c7",
-    minWidth: "150px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-  },
-  componentWrapper: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "10px",
-  },
-  label: {
-    fontSize: "14px",
-    fontWeight: "bold",
-    color: "#2c3e50",
-    textAlign: "center",
-  },
-  pinInfo: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-    marginTop: "10px",
-  },
-  pinBadge: {
-    fontSize: "11px",
-    padding: "4px 8px",
-    backgroundColor: "#3498db",
-    color: "white",
-    borderRadius: "4px",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
-  pinSelector: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "5px",
-    alignItems: "center",
-    marginTop: "10px",
-  },
-  pinLabel: {
-    fontSize: "12px",
-    fontWeight: "bold",
-    color: "#34495e",
-  },
-  select: {
-    padding: "5px 10px",
-    borderRadius: "4px",
-    border: "2px solid #3498db",
-    fontSize: "14px",
-    fontWeight: "bold",
-    backgroundColor: "white",
-    cursor: "pointer",
-  },
-  wireStatus: {
-    fontSize: "11px",
-    padding: "4px 8px",
-    backgroundColor: "#d5f4e6",
-    borderRadius: "4px",
-    textAlign: "center",
-    fontWeight: "bold",
-    marginTop: "5px",
-  },
-  connections: {
-    width: "100%",
-    marginTop: "20px",
-  },
-  connectionInfo: {
-    padding: "15px",
-    backgroundColor: "#e8f8f5",
-    borderRadius: "8px",
-    border: "2px solid #27ae60",
-    fontSize: "13px",
-    lineHeight: "1.8",
-  },
-  wiringList: {
-    marginTop: "10px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  wiringItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    padding: "8px",
-    backgroundColor: "white",
-    borderRadius: "6px",
-    fontSize: "12px",
-  },
-  wireDot: {
-    width: "12px",
-    height: "12px",
-    borderRadius: "50%",
-    display: "inline-block",
-  },
-  wireNote: {
-    marginTop: "10px",
-    fontSize: "11px",
-    fontStyle: "italic",
-    color: "#27ae60",
-    textAlign: "center",
-  },
 };
 
 export default Canvas;

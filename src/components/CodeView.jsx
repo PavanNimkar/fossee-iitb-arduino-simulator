@@ -1,67 +1,61 @@
-import React from 'react';
+import React, { useEffect, useMemo } from "react";
+import { Fragment } from "react";
 
-const CodeView = ({ code }) => {
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(code);
-    alert('Code copied to clipboard!');
-  };
+const CodeView = ({ allPresent, setUnoCode, buttonPin, ledPin }) => {
+  const generatedCode = useMemo(
+    () => `
+const int ledPin = ${ledPin};
+const int buttonPin = ${buttonPin};
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin, INPUT);
+}
+
+void loop() {
+  int buttonState = digitalRead(buttonPin);
+  
+  if (buttonState == HIGH) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  
+  delay(10);
+}
+`,
+    [ledPin, buttonPin],
+  );
+
+  useEffect(() => {
+    if (allPresent) {
+      setUnoCode(generatedCode);
+    }
+  }, [allPresent, generatedCode, setUnoCode]);
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Generated Arduino Code</h3>
-        <button onClick={copyToClipboard} style={styles.copyButton}>
-          📋 Copy Code
-        </button>
+    <div className="flex flex-col bg-gray-100 w-full h-full text-black">
+      <h3 className="font-bold px-4 py-3 bg-green-100 text-black border-b">
+        Auto Generated Code
+      </h3>
+      <div className="code-container p-4 overflow-auto flex-1">
+        {allPresent ? (
+          <pre className="text-sm font-mono bg-gray-900 text-green-400 p-4 rounded">
+            <code>{generatedCode}</code>
+          </pre>
+        ) : (
+          <div className="text-gray-500 text-center mt-8">
+            <p>Add all components to generate code:</p>
+            <ul className="mt-4 text-left inline-block">
+              <li>✓ Arduino Uno</li>
+              <li>✓ LED</li>
+              <li>✓ Push Button</li>
+            </ul>
+          </div>
+        )}
       </div>
-      <pre style={styles.codeBlock}>
-        <code>{code || '// No code generated yet\n// Add components to generate code'}</code>
-      </pre>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    backgroundColor: '#2c3e50',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '15px 20px',
-    backgroundColor: '#34495e',
-    borderBottom: '2px solid #3498db'
-  },
-  title: {
-    margin: 0,
-    color: 'white',
-    fontSize: '16px'
-  },
-  copyButton: {
-    padding: '6px 12px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: 'bold'
-  },
-  codeBlock: {
-    margin: 0,
-    padding: '20px',
-    backgroundColor: '#1e272e',
-    color: '#00ff00',
-    fontSize: '13px',
-    lineHeight: '1.6',
-    overflow: 'auto',
-    maxHeight: '400px',
-    fontFamily: '"Courier New", Courier, monospace'
-  }
 };
 
 export default CodeView;
