@@ -1,16 +1,125 @@
-# React + Vite
+# Minimal Web-Based Arduino Simulator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal web-based Arduino simulator that allows users to visually create a simple Arduino experiment using an **LED** and a **Push Button**, with **auto-wiring**, **configurable pin assignments**, **automatic Arduino code generation**, and **logic-level simulation**.
 
-Currently, two official plugins are available:
+This project is built as part of the **FOSSEE OSHW Semester Internship Screening Task**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Component Selection interface for:
+  - Arduino Uno
+  - LED
+  - Push Button
+- Automatic wiring with default pin mapping:
+  - LED → Digital Pin 10
+  - Push Button → Digital Pin 2
+- Configurable digital pins (D2–D13) with conflict prevention
+- Automatic Arduino code generation:
+  - `pinMode()`
+  - `digitalRead()`
+  - `digitalWrite()`
+- Live code updates when pin assignments change
+- Logic-level simulation:
+  - Button HIGH → LED ON
+  - Button LOW → LED OFF
+- Start / Stop simulation controls
+- Toggle between circuit view and code view
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠 Tech Stack
+
+- Frontend: JavaScript and Tailwind CSS
+- Framework/Tooling: Vite and React
+- UI Components: Wokwi Elements
+- Simulation Logic: avr8js and wokwi api
+
+---
+
+## 📂 Project Structure
+
+```
+![alt text](image.png)
+
+```
+
+---
+
+## ⚙️ Setup & Installation
+
+Follow these steps to run the project locally:
+
+### 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/PavanNimkar/fossee-iitb-arduino-simulator
+```
+
+### 2️⃣ Navigate to the Project Directory
+
+```bash
+cd FOSSEE IITB
+```
+
+### 3️⃣ Install Dependencies
+
+```bash
+npm install
+```
+
+### 4️⃣ Run the Development Server
+
+```bash
+npm run dev
+```
+
+The application will start locally at `http://localhost:5173`.
+
+---
+
+## 🧪 How to Use
+
+1. Select Arduino Uno onto the canvas
+2. Select LED and Push Button
+3. Components are auto-wired by default:
+   * LED → D10
+   * Button → D2
+4. View auto-generated Arduino code using View Code Button
+5. Change pin assignments from the dropdown
+   * Code updates automatically
+   * Invalid pin conflicts are prevented
+6. Click Start Simulation
+7. Press the button → LED turns ON/OFF
+
+---
+
+## Netlify Link
+
+https://pavan-nimkar-webarduinosimulator.netlify.app/
+
+## Demo Video Link
+
+https://drive.google.com/file/d/1Mh-_2J9g5BOsd5S-QeOlKXvqEpZFPjf3/view?usp=drive_link
+
+## Snapshots
+
+### Interface
+![alt text](image-1.png)
+
+### Auto Wiring
+![alt text](image-2.png)
+
+### Auto Code Generation
+![alt text](image-3.png)
+
+### Pin Reassignment by user
+![alt text](image-4.png)
+
+### Simulation
+![alt text](image-5.png)
+
+## 🙌 Acknowledgements
+
+* FOSSEE, IIT Bombay – OSHW Project
+* Wokwi & open-source simulation references
