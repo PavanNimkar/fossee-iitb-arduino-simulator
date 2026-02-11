@@ -40,10 +40,7 @@ This project is built as part of the **FOSSEE OSHW Semester Internship Screening
 
 ## 📂 Project Structure
 
-```
-![alt text](image.png)
-
-```
+<img src="/public/image.png">
 
 ---
 
@@ -105,19 +102,19 @@ https://drive.google.com/file/d/1Mh-_2J9g5BOsd5S-QeOlKXvqEpZFPjf3/view?usp=drive
 ## Snapshots
 
 ### Interface
-![alt text](image-1.png)
+<img src="/public/image-1.png">
 
 ### Auto Wiring
-![alt text](image-2.png)
+<img src="/public/image-2.png">
 
 ### Auto Code Generation
-![alt text](image-3.png)
+<img src="/public/image-3.png">
 
 ### Pin Reassignment by user
-![alt text](image-4.png)
+<img src="/public/image-4.png">
 
 ### Simulation
-![alt text](image-5.png)
+<img src="/public/image-5.png">
 
 ## 🙌 Acknowledgements
 
