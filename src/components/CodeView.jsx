@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo } from "react";
-import { Fragment } from "react";
+import { useEffect, useMemo } from "react";
 
 const CodeView = ({ allPresent, setUnoCode, buttonPin, ledPin }) => {
   const generatedCode = useMemo(

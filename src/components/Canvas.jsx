@@ -105,18 +105,11 @@ const Canvas = ({
   // Update allPresent immediately when components change
   useEffect(() => {
     setAllPresent(allPresent);
-    console.log("Components present:", {
-      hasUno,
-      hasLed,
-      hasButton,
-      allPresent,
-    });
   }, [allPresent, setAllPresent, hasUno, hasLed, hasButton]);
 
   // Restart simulation when pins change
   useEffect(() => {
     if (isSimulationRunning && unoCode) {
-      console.log("Pins changed, restarting simulation...");
       stopCode();
       setLedState(false);
       setButtonPressed(false);
@@ -137,17 +130,15 @@ const Canvas = ({
       const buttonElement = buttonRef.current;
 
       const handlePress = (e) => {
-        console.log("Button press event received");
         if (isSimulationRunning) {
           setButtonPressed(true);
           handleButtonPress(parseInt(buttonPin));
         } else {
-          console.log("Simulation not running");
+          console.log("Not running");
         }
       };
 
       const handleRelease = (e) => {
-        console.log("Button release event received");
         if (isSimulationRunning) {
           setButtonPressed(false);
           handleButtonRelease(parseInt(buttonPin));
@@ -160,8 +151,6 @@ const Canvas = ({
       buttonElement.addEventListener("button-press", handlePress);
       buttonElement.addEventListener("button-release", handleRelease);
 
-      console.log("Button event listeners added");
-
       return () => {
         buttonElement.removeEventListener("button-press", handlePress);
         buttonElement.removeEventListener("button-release", handleRelease);
@@ -170,14 +159,6 @@ const Canvas = ({
   }, [isSimulationRunning, setButtonPressed, buttonPin]);
 
   const handleStart = async () => {
-    console.log("Start button clicked", {
-      unoCode,
-      allPresent,
-      isSimulationRunning,
-      buttonPin,
-      ledPin,
-    });
-
     if (!allPresent) {
       alert(
         "Please add all components (Arduino Uno, LED, and Push Button) first!",
@@ -196,11 +177,8 @@ const Canvas = ({
     }
 
     if (isSimulationRunning) {
-      console.log("Simulation already running");
       return;
     }
-
-    console.log("Starting simulation with code:", unoCode);
     setIsSimulationRunning(true);
     const success = await runCode(unoCode, setLedState, buttonPin, ledPin);
     if (!success) {
@@ -210,7 +188,6 @@ const Canvas = ({
 
   const handleStop = () => {
     if (isSimulationRunning) {
-      console.log("Stopping simulation");
       setIsSimulationRunning(false);
       stopCode();
       setLedState(false);
@@ -235,7 +212,6 @@ const Canvas = ({
     }
 
     setLedPin(newPin);
-    console.log(`LED pin changed to ${newPin}`);
   };
 
   const handleButtonPinChange = (e) => {
@@ -255,7 +231,6 @@ const Canvas = ({
     }
 
     setButtonPin(newPin);
-    console.log(`Button pin changed to ${newPin}`);
   };
 
   const availableLedPins = getAvailableLedPins();
@@ -265,12 +240,12 @@ const Canvas = ({
     <div className="relative h-full bg-gray-50">
       {showLedWiring && (
         <Fragment>
-          {/* LED Ground wire (black) - stays constant */}
+          {/* LED Ground wire (black) */}
           <div
             className={`bg-black origin-top absolute z-10 w-1 h-23 top-30 ml-4 ${toggleState ? "left-66" : "left-118"}`}
           ></div>
 
-          {/* LED Signal wire (red) - changes based on pin */}
+          {/* LED Signal wire (red) */}
           <div
             className={`bg-red-500 absolute origin-top ${ledWireConfig.rotation} ${ledWireConfig.height} z-10 w-1 top-30 ml-4 ${toggleState ? "left-69" : "left-121"}`}
           ></div>
@@ -309,12 +284,12 @@ const Canvas = ({
 
       {showButtonWiring && (
         <Fragment>
-          {/* Button Ground wire (black) - stays constant */}
+          {/* Button Ground wire (black) */}
           <div
             className={`bg-black absolute origin-top rotate-[4.5deg] z-10 top-27 w-1 h-72 ml-4 ${toggleState ? "right-63" : "right-114"}`}
           ></div>
 
-          {/* Button Signal wire (red) - changes based on pin */}
+          {/* Button Signal wire (red) */}
           <div
             className={`bg-red-500 absolute origin-top ${buttonWireConfig.rotation} ${buttonWireConfig.height} z-10 top-27 w-1 ml-4 ${toggleState ? "right-51" : "right-102"}`}
           ></div>

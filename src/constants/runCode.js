@@ -39,13 +39,10 @@ class AVRRunner {
 
     this.stopped = false;
     this.MHZ = 16e6;
-
-    console.log("AVR Runner initialized");
   }
 
   async execute(callback) {
     this.stopped = false;
-    console.log("Starting AVR execution...");
 
     for (;;) {
       avrInstruction(this.cpu);
@@ -55,7 +52,6 @@ class AVRRunner {
         callback(this.cpu);
         await new Promise((resolve) => setTimeout(resolve, 0));
         if (this.stopped) {
-          console.log("Execution stopped");
           break;
         }
       }
@@ -81,8 +77,6 @@ function getPinPort(pinNumber) {
 }
 
 const runCode = async (generatedCode, setLedState, buttonPin, ledPin) => {
-  console.log("Compiling code with pins:", { buttonPin, ledPin });
-
   try {
     // Compile the code
     const result = await fetch("https://hexi.wokwi.com/build", {
@@ -95,27 +89,18 @@ const runCode = async (generatedCode, setLedState, buttonPin, ledPin) => {
 
     const { hex, stderr, stdout } = await result.json();
 
-    console.log("Compilation stdout:", stdout);
-    console.log("Compilation stderr:", stderr);
-
     if (stderr && stderr.includes("error")) {
-      console.error("Compilation error:", stderr);
       alert("Compilation failed:\n" + stderr);
       return false;
     }
 
     if (!hex) {
-      console.error("No hex output");
       alert("Compilation failed: No hex output");
       return false;
     }
 
-    console.log("Compilation successful, hex length:", hex.length);
-
     // Create AVR runner instance
     runner = new AVRRunner(hex);
-
-    console.log("AVR Runner created");
 
     // Get button pin port info
     const buttonPinInfo = getPinPort(buttonPin);
@@ -124,9 +109,6 @@ const runCode = async (generatedCode, setLedState, buttonPin, ledPin) => {
 
     // Initialize button pin to LOW (not pressed in logic-level simulation)
     buttonPort.setPin(buttonBit, false);
-    console.log(
-      `Button pin ${buttonPin} (Port ${buttonPinInfo.port}, bit ${buttonBit}) initialized to LOW`,
-    );
 
     // Get LED pin port info
     const ledPinInfo = getPinPort(ledPin);
@@ -136,24 +118,13 @@ const runCode = async (generatedCode, setLedState, buttonPin, ledPin) => {
     // Monitor the LED port
     ledPort.addListener((value) => {
       const ledOn = (value & (1 << ledBit)) !== 0;
-      console.log(
-        `PORT${ledPinInfo.port} changed:`,
-        value.toString(2).padStart(8, "0"),
-        `LED (pin ${ledPin}):`,
-        ledOn,
-      );
+
       setLedState(ledOn);
     });
 
     // Monitor the button port for debugging
     buttonPort.addListener((value) => {
       const buttonState = (value & (1 << buttonBit)) !== 0;
-      console.log(
-        `PORT${buttonPinInfo.port} changed:`,
-        value.toString(2).padStart(8, "0"),
-        `Button (pin ${buttonPin}):`,
-        buttonState ? "HIGH" : "LOW",
-      );
     });
 
     // Execute the program
@@ -164,17 +135,14 @@ const runCode = async (generatedCode, setLedState, buttonPin, ledPin) => {
       }
     });
 
-    console.log("Execution started");
     return true;
   } catch (error) {
-    console.error("Error in runCode:", error);
     alert("Error: " + error.message);
     return false;
   }
 };
 
 const stopCode = () => {
-  console.log("Stopping simulation...");
   if (runner) {
     runner.stop();
     runner = null;
@@ -185,13 +153,11 @@ const handleButtonPress = (pinIndex) => {
   if (runner) {
     const pinInfo = getPinPort(pinIndex);
     const port = pinInfo.port === "B" ? runner.portB : runner.portD;
-    console.log(
-      `Button pressed - setting pin ${pinIndex} (Port ${pinInfo.port}, bit ${pinInfo.bit}) to HIGH`,
-    );
+
     // Set pin HIGH when button is pressed (logic-level simulation)
     port.setPin(pinInfo.bit, true);
   } else {
-    console.warn("Runner not initialized, cannot press button");
+    console.warn("Cannot press button");
   }
 };
 
@@ -199,13 +165,11 @@ const handleButtonRelease = (pinIndex) => {
   if (runner) {
     const pinInfo = getPinPort(pinIndex);
     const port = pinInfo.port === "B" ? runner.portB : runner.portD;
-    console.log(
-      `Button released - setting pin ${pinIndex} (Port ${pinInfo.port}, bit ${pinInfo.bit}) to LOW`,
-    );
+
     // Set pin LOW when button is released (logic-level simulation)
     port.setPin(pinInfo.bit, false);
   } else {
-    console.warn("Runner not initialized, cannot release button");
+    console.warn("Cannot release button");
   }
 };
 
